@@ -1,0 +1,16 @@
+apiVersion: skaffold/v2alpha4
+kind: Config
+metadata:
+  name: feed-service
+build:
+  artifacts:
+  - image: docker.pkg.github.com/vinhut/feed-service
+deploy:
+  helm:
+    releases:
+    - name: feed-service
+      chartPath: ../kube-deploy/charts/feed-service
+      valuesFiles: 
+        - ../kube-deploy/charts/feed-service/values.yaml
+      values:
+        imageName: docker.pkg.github.com/vinhut/feed-service
