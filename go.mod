@@ -1,4 +1,4 @@
-module gitlab.com/vin_hut/feed-service
+module github.com/vinhut/feed-service
 
 go 1.13
 
