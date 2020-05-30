@@ -10,15 +10,19 @@ import (
 
 var POST_SERVICE_URL = os.Getenv("POST_SERVICE_URL")
 
-type PostService struct {
+type PostService interface {
+	GetAll() error
+}
+
+type postService struct {
 	Results []string `json:"results"`
 }
 
-func NewPostService() *PostService {
-	return &PostService{}
+func NewPostService() *postService {
+	return &postService{}
 }
 
-func (post *PostService) GetAll() error {
+func (post *postService) GetAll() error {
 	resp, err := http.Get(POST_SERVICE_URL + "/allpost")
 	defer resp.Body.Close()
 	if err != nil {

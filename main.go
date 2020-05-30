@@ -10,7 +10,7 @@ import (
 
 var SERVICE_NAME = "feed-service"
 
-func setupRouter(authservice services.AuthService, postservice *services.PostService) *gin.Engine {
+func setupRouter(authservice services.AuthService, postservice services.PostService) *gin.Engine {
 
 	router := gin.Default()
 
