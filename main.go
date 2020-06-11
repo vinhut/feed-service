@@ -38,11 +38,13 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 			panic(err)
 		}
 
+		post_err := postservice.GetAll()
+
 		if raw.Email == "" {
 			c.String(403, "")
+			return
 		}
 
-		post_err := postservice.GetAll()
 		if post_err != nil {
 			fmt.Println(post_err)
 			panic(post_err)
@@ -50,10 +52,11 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 		out, json_err := json.Marshal(postservice)
 		if json_err != nil {
 			fmt.Println(json_err)
+			c.String(500, "error")
 			panic(json_err)
+		} else {
+			c.String(200, string(out))
 		}
-
-		c.String(200, string(out))
 
 	})
 
