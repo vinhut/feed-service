@@ -30,10 +30,10 @@ func NewUserAuthService() AuthService {
 func (userAuth *userAuthService) Login(service string, email string, password string) (string, error) {
 	resp, err := http.PostForm(SERVICE_URL+"/login",
 		url.Values{"service": {service}, "email": {email}, "password": {password}})
-	defer resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
 		return string(body), nil
@@ -45,10 +45,10 @@ func (userAuth *userAuthService) Login(service string, email string, password st
 
 func (userAuth *userAuthService) Check(service string, token string) (string, error) {
 	resp, err := http.Get(SERVICE_URL + "/user?service=" + service + "&token=" + token)
-	defer resp.Body.Close()
 	if err != nil {
 		return "", err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
 		return string(body), nil
@@ -64,10 +64,10 @@ func (userAuth *userAuthService) Update() (bool, error) {
 func (userAuth *userAuthService) Create(service string, email string, password string) (bool, error) {
 	resp, err := http.PostForm(SERVICE_URL+"/user",
 		url.Values{"service": {service}, "email": {email}, "password": {password}})
-	defer resp.Body.Close()
 	if err != nil {
 		return false, err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		return true, nil
 	} else {

@@ -24,10 +24,10 @@ func NewPostService() *postService {
 
 func (post *postService) GetAll() error {
 	resp, err := http.Get(POST_SERVICE_URL + "/allpost")
-	defer resp.Body.Close()
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
 		fmt.Println("body = ", string(body))
