@@ -68,6 +68,9 @@ func main() {
 	authservice := services.NewUserAuthService()
 	postservice := services.NewPostService()
 	router := setupRouter(authservice, postservice)
-	router.Run(":8080")
+	err := router.Run(":8080")
+	if err != nil {
+		panic(err)
+	}
 
 }
