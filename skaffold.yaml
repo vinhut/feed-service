@@ -9,8 +9,8 @@ deploy:
   helm:
     releases:
     - name: feed-service
-      chartPath: ../kube-deploy/charts/feed-service
+      chartPath: ../../kube-deploy/charts/feed-service
       valuesFiles: 
-        - ../kube-deploy/charts/feed-service/values.yaml
+        - ../../kube-deploy/charts/feed-service/values.yaml
       values:
         imageName: docker.pkg.github.com/vinhut/feed-service

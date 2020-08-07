@@ -2,15 +2,40 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	opentracing "github.com/opentracing/opentracing-go"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
+	"github.com/uber/jaeger-lib/metrics"
 	"github.com/vinhut/feed-service/services"
 
 	"encoding/json"
 	"fmt"
+	"os"
 )
 
 var SERVICE_NAME = "feed-service"
 
 func setupRouter(authservice services.AuthService, postservice services.PostService) *gin.Engine {
+
+	var JAEGER_COLLECTOR_ENDPOINT = os.Getenv("JAEGER_COLLECTOR_ENDPOINT")
+	cfg := jaegercfg.Configuration{
+		ServiceName: "feed-service",
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans:          true,
+			CollectorEndpoint: JAEGER_COLLECTOR_ENDPOINT,
+		},
+	}
+	jLogger := jaegerlog.StdLogger
+	jMetricsFactory := metrics.NullFactory
+	tracer, _, _ := cfg.NewTracer(
+		jaegercfg.Logger(jLogger),
+		jaegercfg.Metrics(jMetricsFactory),
+	)
+	opentracing.SetGlobalTracer(tracer)
 
 	router := gin.Default()
 
@@ -19,6 +44,8 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 	})
 
 	router.GET(SERVICE_NAME+"/feed", func(c *gin.Context) {
+		span := tracer.StartSpan("get feed")
+
 		value, err := c.Cookie("token")
 		if err != nil {
 			panic("failed get token")
@@ -56,6 +83,7 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 			panic(json_err)
 		} else {
 			c.String(200, string(out))
+			span.Finish()
 		}
 
 	})

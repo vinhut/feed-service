@@ -1,10 +1,14 @@
 package services
 
 import (
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
 var SERVICE_URL = os.Getenv("AUTH_SERVICE_URL")
@@ -28,8 +32,23 @@ func NewUserAuthService() AuthService {
 }
 
 func (userAuth *userAuthService) Login(service string, email string, password string) (string, error) {
-	resp, err := http.PostForm(SERVICE_URL+"/login",
-		url.Values{"service": {service}, "email": {email}, "password": {password}})
+	tracer := opentracing.GlobalTracer()
+	childSpan := tracer.StartSpan(
+		"userauth login",
+	)
+	defer childSpan.Finish()
+	endpoint := SERVICE_URL + "/login"
+	data := url.Values{"service": {service}, "email": {email}, "password": {password}}
+	req, _ := http.NewRequest("POST", endpoint, strings.NewReader(data.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	ext.SpanKindRPCClient.Set(childSpan)
+	ext.HTTPUrl.Set(childSpan, endpoint)
+	ext.HTTPMethod.Set(childSpan, "POST")
+
+	tracer.Inject(childSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+	resp, err := http.DefaultClient.Do(req)
+
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +63,21 @@ func (userAuth *userAuthService) Login(service string, email string, password st
 }
 
 func (userAuth *userAuthService) Check(service string, token string) (string, error) {
-	resp, err := http.Get(SERVICE_URL + "/user?service=" + service + "&token=" + token)
+	tracer := opentracing.GlobalTracer()
+	childSpan := tracer.StartSpan(
+		"userauth check",
+	)
+	defer childSpan.Finish()
+	endpoint := SERVICE_URL + "/user?service=" + service + "&token=" + token
+	req, _ := http.NewRequest("GET", endpoint, nil)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	ext.SpanKindRPCClient.Set(childSpan)
+	ext.HTTPUrl.Set(childSpan, endpoint)
+	ext.HTTPMethod.Set(childSpan, "GET")
+
+	tracer.Inject(childSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -62,6 +95,11 @@ func (userAuth *userAuthService) Update() (bool, error) {
 }
 
 func (userAuth *userAuthService) Create(service string, email string, password string) (bool, error) {
+	tracer := opentracing.GlobalTracer()
+	childSpan := tracer.StartSpan(
+		"userauth create",
+	)
+	defer childSpan.Finish()
 	resp, err := http.PostForm(SERVICE_URL+"/user",
 		url.Values{"service": {service}, "email": {email}, "password": {password}})
 	if err != nil {

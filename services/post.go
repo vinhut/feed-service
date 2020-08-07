@@ -1,6 +1,9 @@
 package services
 
 import (
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
+
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -23,7 +26,20 @@ func NewPostService() *postService {
 }
 
 func (post *postService) GetAll() error {
-	resp, err := http.Get(POST_SERVICE_URL + "/allpost")
+	tracer := opentracing.GlobalTracer()
+	childSpan := tracer.StartSpan(
+		"get all post",
+	)
+	defer childSpan.Finish()
+	endpoint := POST_SERVICE_URL + "/allpost"
+	req, _ := http.NewRequest("GET", endpoint, nil)
+
+	ext.SpanKindRPCClient.Set(childSpan)
+	ext.HTTPUrl.Set(childSpan, endpoint)
+	ext.HTTPMethod.Set(childSpan, "GET")
+
+	tracer.Inject(childSpan.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(req.Header))
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}
