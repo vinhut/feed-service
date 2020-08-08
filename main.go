@@ -46,6 +46,10 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 	router.GET(SERVICE_NAME+"/feed", func(c *gin.Context) {
 		span := tracer.StartSpan("get feed")
 
+		feed_range, query_exist := c.GetQuery("range")
+		if query_exist == false {
+			feed_range = "8"
+		}
 		value, err := c.Cookie("token")
 		if err != nil {
 			panic("failed get token")
@@ -65,7 +69,7 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 			panic(err)
 		}
 
-		post_err := postservice.GetAll()
+		post_err := postservice.GetAll(feed_range)
 
 		if raw.Email == "" {
 			c.String(403, "")

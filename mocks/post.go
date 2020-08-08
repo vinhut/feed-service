@@ -33,15 +33,15 @@ func (m *MockPostService) EXPECT() *MockPostServiceMockRecorder {
 }
 
 // GetAll mocks base method
-func (m *MockPostService) GetAll() error {
+func (m *MockPostService) GetAll(arg0 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAll")
+	ret := m.ctrl.Call(m, "GetAll", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // GetAll indicates an expected call of GetAll
-func (mr *MockPostServiceMockRecorder) GetAll() *gomock.Call {
+func (mr *MockPostServiceMockRecorder) GetAll(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockPostService)(nil).GetAll))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockPostService)(nil).GetAll), arg0)
 }

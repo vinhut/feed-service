@@ -43,7 +43,7 @@ func TestGetFeed(t *testing.T) {
 	mock_post := mocks.NewMockPostService(ctrl)
 
 	mock_auth.EXPECT().Check(gomock.Any(), gomock.Any()).Return(user_data, nil)
-	mock_post.EXPECT().GetAll().Return(nil)
+	mock_post.EXPECT().GetAll(gomock.Any()).Return(nil)
 
 	router := setupRouter(mock_auth, mock_post)
 
@@ -69,7 +69,7 @@ func TestEmailEmpty(t *testing.T) {
 	mock_post := mocks.NewMockPostService(ctrl)
 
 	mock_auth.EXPECT().Check(gomock.Any(), gomock.Any()).Return(user_data, nil)
-	mock_post.EXPECT().GetAll().Return(nil)
+	mock_post.EXPECT().GetAll(gomock.Any()).Return(nil)
 
 	router := setupRouter(mock_auth, mock_post)
 

@@ -14,7 +14,7 @@ import (
 var POST_SERVICE_URL = os.Getenv("POST_SERVICE_URL")
 
 type PostService interface {
-	GetAll() error
+	GetAll(string) error
 }
 
 type postService struct {
@@ -25,13 +25,13 @@ func NewPostService() *postService {
 	return &postService{}
 }
 
-func (post *postService) GetAll() error {
+func (post *postService) GetAll(feed_range string) error {
 	tracer := opentracing.GlobalTracer()
 	childSpan := tracer.StartSpan(
 		"get all post",
 	)
 	defer childSpan.Finish()
-	endpoint := POST_SERVICE_URL + "/allpost"
+	endpoint := POST_SERVICE_URL + "/allpost?range=" + feed_range
 	req, _ := http.NewRequest("GET", endpoint, nil)
 
 	ext.SpanKindRPCClient.Set(childSpan)
