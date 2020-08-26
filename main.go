@@ -39,7 +39,7 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 
 	router := gin.Default()
 
-	router.GET(SERVICE_NAME+"/ping", func(c *gin.Context) {
+	router.GET("/ping", func(c *gin.Context) {
 		c.String(200, "OK")
 	})
 
