@@ -5,7 +5,7 @@ import (
 	"github.com/opentracing/opentracing-go/ext"
 
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -46,15 +46,13 @@ func (post *postService) GetAll(feed_range string) error {
 	defer resp.Body.Close()
 	if resp.StatusCode == 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
-		fmt.Println("body = ", string(body))
 		json_err := json.Unmarshal(body, &post)
-		fmt.Println("post = ", post)
 		if json_err != nil {
 			return json_err
 		}
 		return nil
 	} else {
-		panic(resp.StatusCode)
+		return errors.New("post : post service error " + string(resp.StatusCode))
 	}
 
 }

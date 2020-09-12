@@ -12,7 +12,6 @@ import (
 	"github.com/vinhut/feed-service/services"
 
 	"encoding/json"
-	"fmt"
 	"os"
 )
 
@@ -63,13 +62,17 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 		if query_exist == false {
 			feed_range = "8"
 		}
-		value, err := c.Cookie("token")
-		if err != nil {
-			panic("failed get token")
+		value, token_err := c.Cookie("token")
+		if token_err != nil {
+			span.Finish()
+			c.AbortWithStatusJSON(401, gin.H{"reason": "unauthorized"})
+			return
 		}
 		user_data, auth_error := authservice.Check(SERVICE_NAME, value)
 		if auth_error != nil {
-			panic(auth_error)
+			span.Finish()
+			c.AbortWithStatusJSON(401, gin.H{"reason": "unauthorized"})
+			return
 		}
 		var raw struct {
 			Uid     string
@@ -77,27 +80,28 @@ func setupRouter(authservice services.AuthService, postservice services.PostServ
 			Role    string
 			Created string
 		}
-		if err := json.Unmarshal([]byte(user_data), &raw); err != nil {
-			fmt.Println(err)
-			panic(err)
+		if json_err := json.Unmarshal([]byte(user_data), &raw); json_err != nil {
+			span.Finish()
+			panic(json_err.Error())
+		}
+
+		if raw.Email == "" {
+			span.Finish()
+			c.AbortWithStatusJSON(403, gin.H{"reason": "unauthorized"})
+			return
 		}
 
 		post_err := postservice.GetAll(feed_range)
 
-		if raw.Email == "" {
-			c.String(403, "")
+		if post_err != nil {
+			span.Finish()
+			c.AbortWithStatusJSON(502, gin.H{"reason": "post service error"})
 			return
 		}
-
-		if post_err != nil {
-			fmt.Println(post_err)
-			panic(post_err)
-		}
-		out, json_err := json.Marshal(postservice)
-		if json_err != nil {
-			fmt.Println(json_err)
-			c.String(500, "error")
-			panic(json_err)
+		out, marshal_err := json.Marshal(postservice)
+		if marshal_err != nil {
+			span.Finish()
+			panic(marshal_err.Error())
 		} else {
 			c.String(200, string(out))
 			span.Finish()

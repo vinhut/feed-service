@@ -4,6 +4,7 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -57,7 +58,7 @@ func (userAuth *userAuthService) Login(service string, email string, password st
 		body, _ := ioutil.ReadAll(resp.Body)
 		return string(body), nil
 	} else {
-		return "", err
+		return "", errors.New("unauthorized: login error")
 	}
 
 }
@@ -86,7 +87,7 @@ func (userAuth *userAuthService) Check(service string, token string) (string, er
 		body, _ := ioutil.ReadAll(resp.Body)
 		return string(body), nil
 	} else {
-		return "", err
+		return "", errors.New("unauthorized: check error")
 	}
 }
 
@@ -109,7 +110,7 @@ func (userAuth *userAuthService) Create(service string, email string, password s
 	if resp.StatusCode == 200 {
 		return true, nil
 	} else {
-		return false, err
+		return false, errors.New("auth: create user error")
 	}
 
 }
